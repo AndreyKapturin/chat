@@ -3,7 +3,8 @@ const chat = document.querySelector('#chat');
 const messageForm = document.querySelector('#messageForm');
 const HOST = window.location.host;
 const PROTOCOL = window.location.protocol
-const socket = new WebSocket(`ws://${HOST}`);
+const WS_PROTOCOL = PROTOCOL.startsWith('https') ? 'wss' : 'ws';
+const socket = new WebSocket(`${WS_PROTOCOL}://${HOST}`);
 
 socket.addEventListener('open', async () => {
   const messages = await getAllMessages();
