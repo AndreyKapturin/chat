@@ -1,16 +1,17 @@
 const container = document.querySelector('.container');
 const chat = document.querySelector('#chat');
 const messageForm = document.querySelector('#messageForm');
-const HOST = window.location.hostname;
-const socket = io();
+const HOST = window.location.host;
+const PROTOCOL = window.location.protocol
+const socket = new WebSocket(`ws://${HOST}`);
 
-socket.on('connect', async () => {
+socket.addEventListener('open', async () => {
   const messages = await getAllMessages();
   messages.forEach(showMessage);
 })
 
-socket.addEventListener('send message', (message) => {
-  showMessage(message);
+socket.addEventListener('message', ({ data }) => {
+  showMessage(data);
 })  
 
 function showMessage(message) {
@@ -41,7 +42,7 @@ messageForm.addEventListener('submit', (e) => {
   const userNameRegExp = new RegExp('\\p{L}{2,20}', 'u');
 
   if (userNameRegExp.test(userName.value)) {
-    socket.emit('send message', `${userName.value}:  ${input.value}`);
+    socket.send(`${userName.value}:  ${input.value}`);
     
     if (savedUserName !== userName.value) {
       localStorage.setItem('userName', userName.value);
@@ -56,7 +57,7 @@ messageForm.addEventListener('submit', (e) => {
 messageForm.append(userName, input, button);
 
 async function getAllMessages() {
-  const response = await fetch(`https://${HOST}/messages`);
+  const response = await fetch(`${PROTOCOL}//${HOST}/messages`);
   const messages = response.json();
   return messages;
 }

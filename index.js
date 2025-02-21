@@ -1,5 +1,5 @@
 import express from 'express';
-import { Server } from 'socket.io';
+import { WebSocketServer } from 'ws';
 import http from 'http';
 import path from 'path';
 import { addMessage, getMessages, deleteMessage } from './storage.js';
@@ -7,23 +7,25 @@ import { addMessage, getMessages, deleteMessage } from './storage.js';
 const PORT = process.env.PORT;
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
+const wss = new WebSocketServer({ server });
 
-const CORS_WHITE_LIST = ['http://89.111.170.6', 'https://89.111.170.6'];
+const CORS_WHITE_LIST = ['http://89.111.170.6', 'https://89.111.170.6', 'http://localhost:3000'];
 
 app.use((req, res, next) => {
-  const requestOrigin = req.headers.origin;
+  const requestOrigin = req.headers.host;
 
   if (CORS_WHITE_LIST.includes(requestOrigin)) {
     res.setHeader('Access-Control-Allow-Origin', requestOrigin)
   }
+
   next();
 })
 
-io.on('connection', async (socket) => {
-  socket.on('send message', async (message) => {
+wss.on('connection', async (socket) => {
+  socket.on('message', async (data) => {
+    var message = data.toString();
     await addMessage(message);
-    io.emit('send message', message);
+    wss.clients.forEach( c => c.send(message));
   })
 });
 
