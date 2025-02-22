@@ -8,10 +8,10 @@ html,
 body,
 .container {
   min-height: 100svh;
+  padding: 0 10px;
 }
 
 .container {
   max-width: 1000px;
   margin: 0 auto;
 }
-
