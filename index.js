@@ -2,7 +2,7 @@ import express from 'express';
 import { WebSocketServer } from 'ws';
 import http from 'http';
 import path from 'path';
-import { addMessage, getMessages, deleteMessage } from './storage.js';
+import { sequelize } from './database/index.js';
 
 const PORT = process.env.PORT;
 const app = express();
@@ -21,27 +21,28 @@ app.use((req, res, next) => {
   next();
 })
 
+app.use(express.json());
+
 wss.on('connection', async (socket) => {
   socket.on('message', async (data) => {
     var message = data.toString();
-    await addMessage(message);
-    wss.clients.forEach( c => c.send(message));
+    const savedMessage = await sequelize.model('Message').create({ text: message });
+    wss.clients.forEach( c => c.send(savedMessage.text));
   })
 });
-
 
 app.get('/', (req, res) => {
   res.sendFile(path.resolve('./public/index.html'));
 })
 
 app.get('/messages', async (req, res) => {
-  const messages = await getMessages();
+  const messages = await sequelize.model('Message').findAll();
   res.setHeader('Content-Type', 'Application/json');
-  res.send(JSON.stringify(messages));
+  res.send(JSON.stringify(messages.map(m => m.text)));
 })
 
 app.get('/delete-messages', async (req, res) => {
-  await deleteMessage();
+  await sequelize.model('Message').destroy({ truncate: true });
   res.redirect('/');
 })
 
