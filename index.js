@@ -16,7 +16,7 @@ app.use(MainRouter);
 
 wss.on('connection', async (socket) => {
   socket.on('message', async (data) => {
-    var message = data.toString();
+    const message = data.toString();
     const savedMessage = await sequelize.model('Message').create({ text: message });
     wss.clients.forEach( c => c.send(savedMessage.text));
   })
