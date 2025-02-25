@@ -21,7 +21,7 @@ MessagesRouter.get('/delete-messages', deleteAllMessages);
 // Users
 const UsersRouter = Router();
 
-UsersRouter.post('/login',loginValidate, login);
+UsersRouter.post('/login', loginValidate, login);
 UsersRouter.post('/registration', registrationValidate, registration);
 UsersRouter.use((err, req, res, next) => {
   if (err instanceof ValidationError) {

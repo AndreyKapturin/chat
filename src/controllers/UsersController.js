@@ -1,5 +1,8 @@
 import { sequelize } from "../../database/index.js";
 import bcrypt from "bcryptjs";
+import jwt from 'jsonwebtoken';
+import { ACCESS_TOKEN_LIFETIME_IN_SECOND, REFRESH_TOKEN_LIFETIME_IN_SECOND, SECRET_KEY } from "../../config/index.js";
+
 const UserModel = sequelize.model('User');
 
 export const login = async (req, res) => {
@@ -12,7 +15,25 @@ export const login = async (req, res) => {
     res.status(400).json({ message: 'Invalid email/password pair'});
     return;
   }
-  //TODO: Убрать пароль из выдачи
+
+  const payload = {
+    id: user.id
+  }
+
+  const accessToken = jwt.sign(payload, SECRET_KEY, { expiresIn: ACCESS_TOKEN_LIFETIME_IN_SECOND })
+  const refreshToken = jwt.sign(payload, SECRET_KEY, { expiresIn: REFRESH_TOKEN_LIFETIME_IN_SECOND })
+
+  res.cookie('accessToken', accessToken, {
+    maxAge: 1000 * ACCESS_TOKEN_LIFETIME_IN_SECOND,
+    secure: true,
+    httpOnly: true
+});
+  res.cookie('refreshToken', refreshToken, {
+    maxAge: 1000 * REFRESH_TOKEN_LIFETIME_IN_SECOND,
+    secure: true,
+    httpOnly: true
+});
+
   res.status(200).json(
     {
       id: user.id,
@@ -36,7 +57,7 @@ export const registration = async (req, res) => {
 
   const hashedPassword = await bcrypt.hash(password, 5);
   const user = await UserModel.create({name, email, password: hashedPassword});
-  //TODO: Убрать пароль из выдачи
+
   res.status(201).json(
     {
       id: user.id,
