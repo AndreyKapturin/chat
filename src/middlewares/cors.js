@@ -1,4 +1,4 @@
-const CORS_WHITE_LIST = ['http://89.111.170.6', 'https://89.111.170.6', 'http://localhost:3000'];
+const CORS_WHITE_LIST = ['http://89.111.170.6', 'https://89.111.170.6', 'http://localhost:3000', 'http://localhost:5173'];
 
 export const corsMiddleware = (req, res, next) => {
   const requestOrigin = req.headers.origin;
